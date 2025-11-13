@@ -3,7 +3,7 @@
 import logging
 
 from plugin import InvenTreePlugin
-from plugin.mixins import EventMixin, SettingsMixin
+from plugin.mixins import APICallMixin, EventMixin, SettingsMixin
 
 from .magento_api import Magento2APIError, Magento2Client
 from .version import PLUGIN_NAME, PLUGIN_SLUG, PLUGIN_TITLE, PLUGIN_VERSION
@@ -11,7 +11,7 @@ from .version import PLUGIN_NAME, PLUGIN_SLUG, PLUGIN_TITLE, PLUGIN_VERSION
 logger = logging.getLogger("inventree")
 
 
-class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
+class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTreePlugin):
     """Plugin to synchronize InvenTree stock quantities to Magento 2.
 
     This plugin listens for stock item changes (create, update, delete) and
@@ -20,6 +20,11 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
     The mapping between InvenTree and Magento 2 is:
     - InvenTree Part Name = Magento 2 Product SKU
     - InvenTree total stock quantity = Magento 2 product quantity
+
+    Mixins used:
+    - APICallMixin: Provides API call tracking and basic HTTP functionality
+    - EventMixin: Listens to InvenTree stock events
+    - SettingsMixin: Provides plugin configuration settings
     """
 
     NAME = PLUGIN_NAME
@@ -31,6 +36,10 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
     DESCRIPTION = "Automatically sync stock quantities from InvenTree to Magento 2"
     WEBSITE = "https://github.com/inventree/inventree-magento2-sync"
     LICENSE = "MIT"
+
+    # APICallMixin configuration
+    API_URL_SETTING = 'MAGENTO_URL'
+    API_TOKEN_SETTING = 'ACCESS_TOKEN'
 
     SETTINGS = {
         "MAGENTO_URL": {
