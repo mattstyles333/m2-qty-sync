@@ -5,13 +5,16 @@ Automatically synchronize stock quantities from InvenTree to Magento 2 in real-t
 ## Features
 
 - **Automatic Sync**: Listens for any stock changes in InvenTree and updates Magento 2 instantly
-- **Event-Driven**: Uses InvenTree's event system to capture:
-  - New stock items created
+- **Event-Driven**: Uses InvenTree's stock event system to capture:
   - Stock quantities updated (add/remove/count)
-  - Stock items deleted
+  - Stock items moved between locations
+  - Stock counted/adjusted
+  - Stock split into multiple items
+  - Stock assigned to customers
+  - Stock returned from customers
+  - Stock installed into assemblies
 - **Smart Mapping**: Maps InvenTree Part Name → Magento 2 Product SKU
 - **Total Quantity**: Always syncs the total available quantity across all stock items
-- **Configurable**: Enable/disable sync per event type (create/update/delete)
 - **Dry Run Mode**: Test the sync without actually updating Magento 2
 - **Error Handling**: Comprehensive logging and error handling
 - **SSL Support**: Optional SSL certificate verification
@@ -84,9 +87,6 @@ After enabling the plugin, configure it via **Settings → Plugins → Magento 2
 | **Dry Run Mode** | `False` | Log actions without updating Magento 2 |
 | **Verify SSL** | `True` | Verify SSL certificates |
 | **Request Timeout** | `30` | API request timeout in seconds |
-| **Sync on Create** | `True` | Sync when new stock items are created |
-| **Sync on Update** | `True` | Sync when stock items are updated |
-| **Sync on Delete** | `True` | Sync when stock items are deleted |
 
 ## Magento 2 Setup
 

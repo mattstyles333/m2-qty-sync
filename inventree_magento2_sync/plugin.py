@@ -70,24 +70,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             "default": 30,
             "validator": int,
         },
-        "SYNC_ON_CREATE": {
-            "name": "Sync on Create",
-            "description": "Sync to Magento 2 when new stock items are created",
-            "default": True,
-            "validator": bool,
-        },
-        "SYNC_ON_UPDATE": {
-            "name": "Sync on Update",
-            "description": "Sync to Magento 2 when stock items are updated",
-            "default": True,
-            "validator": bool,
-        },
-        "SYNC_ON_DELETE": {
-            "name": "Sync on Delete",
-            "description": "Sync to Magento 2 when stock items are deleted",
-            "default": True,
-            "validator": bool,
-        },
+
     }
 
     def __init__(self):
@@ -126,7 +109,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
     def wants_process_event(self, event: str) -> bool:
         """Determine if this event should be processed.
 
-        Only process stock item creation, update, and deletion events.
+        We listen to InvenTree's stock events which trigger whenever stock quantities change.
 
         Args:
             event: Event name
@@ -145,25 +128,19 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             logger.warning(f"[Magento2StockSync] Ignoring event '{event}' - sync is DISABLED in settings")
             return False
 
-        # Check which events to process based on settings
-        sync_on_create = self.get_setting("SYNC_ON_CREATE", True)
-        sync_on_update = self.get_setting("SYNC_ON_UPDATE", True)
-        sync_on_delete = self.get_setting("SYNC_ON_DELETE", True)
+        # Map InvenTree stock events to our sync settings
+        # We process any event that changes stock quantities
+        stock_change_events = [
+            "stockitem.quantityupdated",  # Quantity changed
+            "stockitem.moved",             # Item moved (might affect location-based stock)
+            "stockitem.counted",           # Stock counted/adjusted
+            "stockitem.split",             # Item split (creates new items)
+            "stockitem.assignedtocustomer", # Assigned to customer (reduces available stock)
+            "stockitem.returnedfromcustomer", # Returned from customer (increases stock)
+            "stockitem.installed",         # Installed into assembly
+        ]
         
-        logger.info(
-            f"[Magento2StockSync] Event settings: "
-            f"SYNC_ON_CREATE={sync_on_create}, "
-            f"SYNC_ON_UPDATE={sync_on_update}, "
-            f"SYNC_ON_DELETE={sync_on_delete}"
-        )
-        
-        event_map = {
-            "stock_stockitem.created": sync_on_create,
-            "stock_stockitem.saved": sync_on_update,
-            "stock_stockitem.deleted": sync_on_delete,
-        }
-
-        should_process = event_map.get(event, False)
+        should_process = event in stock_change_events
         
         logger.info(
             f"[Magento2StockSync] Event '{event}' - "
