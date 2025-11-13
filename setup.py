@@ -2,14 +2,12 @@
 
 from setuptools import find_packages, setup
 
-from inventree_magento2_sync.version import PLUGIN_VERSION
-
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="inventree-magento2-sync",
-    version=PLUGIN_VERSION,
+    version="1.0.0",
     author="InvenTree Community",
     author_email="",
     description="InvenTree plugin to sync stock quantities to Magento 2",
