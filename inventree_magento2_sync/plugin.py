@@ -94,6 +94,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
         """Initialize the plugin."""
         super().__init__()
         self._client = None
+        logger.info(f"Magento2StockSyncPlugin v{PLUGIN_VERSION} initialized")
 
     def get_magento_client(self) -> Magento2Client:
         """Get or create a Magento 2 API client.
@@ -132,7 +133,9 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             True if the event should be processed
         """
         # Check if sync is enabled
-        if not self.get_setting("ENABLE_SYNC", False):
+        sync_enabled = self.get_setting("ENABLE_SYNC", False)
+        if not sync_enabled:
+            logger.debug(f"Magento2StockSync: Ignoring event '{event}' - sync is disabled")
             return False
 
         # Check which events to process based on settings
@@ -142,7 +145,15 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             "stock_stockitem.deleted": self.get_setting("SYNC_ON_DELETE", True),
         }
 
-        return event_map.get(event, False)
+        should_process = event_map.get(event, False)
+        
+        if event in event_map:
+            logger.debug(
+                f"Magento2StockSync: Event '{event}' - "
+                f"should_process={should_process}"
+            )
+        
+        return should_process
 
     def process_event(self, event: str, *args, **kwargs):
         """Process a stock change event and sync to Magento 2.
