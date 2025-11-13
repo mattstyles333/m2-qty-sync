@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "inventree-magento2-sync"
+name = "m2-qty-sync"
 version = "1.0.0"
 description = "InvenTree plugin to sync stock quantities to Magento 2"
 readme = "README.md"
@@ -33,9 +33,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/inventree/inventree-magento2-sync"
-Repository = "https://github.com/inventree/inventree-magento2-sync"
-Issues = "https://github.com/inventree/inventree-magento2-sync/issues"
+Homepage = "https://github.com/mattstyles333/m2-qty-sync"
+Repository = "https://github.com/mattstyles333/m2-qty-sync"
+Issues = "https://github.com/mattstyles333/m2-qty-sync/issues"
 
 [project.entry-points."inventree_plugins"]
 Magento2StockSyncPlugin = "inventree_magento2_sync.plugin:Magento2StockSyncPlugin"

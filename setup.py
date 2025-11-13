@@ -6,14 +6,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="inventree-magento2-sync",
+    name="m2-qty-sync",
     version="1.0.0",
     author="InvenTree Community",
     author_email="",
     description="InvenTree plugin to sync stock quantities to Magento 2",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/inventree/inventree-magento2-sync",
+    url="https://github.com/mattstyles333/m2-qty-sync",
     license="MIT",
     packages=find_packages(),
     python_requires=">=3.9",
