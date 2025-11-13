@@ -94,7 +94,9 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
         """Initialize the plugin."""
         super().__init__()
         self._client = None
+        logger.info("=" * 60)
         logger.info(f"Magento2StockSyncPlugin v{PLUGIN_VERSION} initialized")
+        logger.info("=" * 60)
 
     def get_magento_client(self) -> Magento2Client:
         """Get or create a Magento 2 API client.
@@ -132,26 +134,41 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
         Returns:
             True if the event should be processed
         """
+        # Log ALL events to help diagnose
+        logger.info(f"[Magento2StockSync] Received event: '{event}'")
+        
         # Check if sync is enabled
         sync_enabled = self.get_setting("ENABLE_SYNC", False)
+        logger.info(f"[Magento2StockSync] ENABLE_SYNC setting: {sync_enabled}")
+        
         if not sync_enabled:
-            logger.debug(f"Magento2StockSync: Ignoring event '{event}' - sync is disabled")
+            logger.warning(f"[Magento2StockSync] Ignoring event '{event}' - sync is DISABLED in settings")
             return False
 
         # Check which events to process based on settings
+        sync_on_create = self.get_setting("SYNC_ON_CREATE", True)
+        sync_on_update = self.get_setting("SYNC_ON_UPDATE", True)
+        sync_on_delete = self.get_setting("SYNC_ON_DELETE", True)
+        
+        logger.info(
+            f"[Magento2StockSync] Event settings: "
+            f"SYNC_ON_CREATE={sync_on_create}, "
+            f"SYNC_ON_UPDATE={sync_on_update}, "
+            f"SYNC_ON_DELETE={sync_on_delete}"
+        )
+        
         event_map = {
-            "stock_stockitem.created": self.get_setting("SYNC_ON_CREATE", True),
-            "stock_stockitem.saved": self.get_setting("SYNC_ON_UPDATE", True),
-            "stock_stockitem.deleted": self.get_setting("SYNC_ON_DELETE", True),
+            "stock_stockitem.created": sync_on_create,
+            "stock_stockitem.saved": sync_on_update,
+            "stock_stockitem.deleted": sync_on_delete,
         }
 
         should_process = event_map.get(event, False)
         
-        if event in event_map:
-            logger.debug(
-                f"Magento2StockSync: Event '{event}' - "
-                f"should_process={should_process}"
-            )
+        logger.info(
+            f"[Magento2StockSync] Event '{event}' - "
+            f"will_process={should_process}"
+        )
         
         return should_process
 
@@ -163,6 +180,13 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             *args: Positional arguments from event
             **kwargs: Keyword arguments from event (includes 'model', 'id', 'instance')
         """
+        logger.info("=" * 60)
+        logger.info(f"[Magento2StockSync] PROCESS_EVENT CALLED")
+        logger.info(f"[Magento2StockSync] Event: '{event}'")
+        logger.info(f"[Magento2StockSync] Args: {args}")
+        logger.info(f"[Magento2StockSync] Kwargs keys: {list(kwargs.keys())}")
+        logger.info("=" * 60)
+        
         try:
             # Extract event data
             model = kwargs.get("model")
@@ -170,7 +194,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             instance = kwargs.get("instance")
 
             logger.info(
-                f"Processing event '{event}' for StockItem ID {stock_item_id}"
+                f"[Magento2StockSync] Processing event '{event}' for StockItem ID {stock_item_id}"
             )
 
             # Get the Part associated with this StockItem
@@ -178,7 +202,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
 
             if not part:
                 logger.warning(
-                    f"Could not determine Part for StockItem ID {stock_item_id}, skipping sync"
+                    f"[Magento2StockSync] Could not determine Part for StockItem ID {stock_item_id}, skipping sync"
                 )
                 return
 
@@ -187,7 +211,7 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
 
             if not sku:
                 logger.warning(
-                    f"Part ID {part.pk} has no name, cannot sync to Magento 2"
+                    f"[Magento2StockSync] Part ID {part.pk} has no name, cannot sync to Magento 2"
                 )
                 return
 
@@ -195,14 +219,14 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             total_quantity = self._calculate_total_quantity(part)
 
             logger.info(
-                f"Part '{sku}' (ID {part.pk}) total quantity: {total_quantity}"
+                f"[Magento2StockSync] Part '{sku}' (ID {part.pk}) total quantity: {total_quantity}"
             )
 
             # Sync to Magento 2
             self._sync_to_magento(sku, total_quantity, event)
 
         except Exception as e:
-            logger.error(f"Error processing event '{event}': {str(e)}", exc_info=True)
+            logger.error(f"[Magento2StockSync] Error processing event '{event}': {str(e)}", exc_info=True)
 
     def _get_part_from_event(
         self, event: str, instance, stock_item_id: int, **kwargs
@@ -276,10 +300,12 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
             event: Event that triggered this sync
         """
         dry_run = self.get_setting("DRY_RUN", False)
+        
+        logger.info(f"[Magento2StockSync] Syncing to Magento: SKU='{sku}', qty={quantity}, dry_run={dry_run}")
 
         if dry_run:
-            logger.info(
-                f"[DRY RUN] Would update Magento 2 SKU '{sku}' to quantity {quantity} "
+            logger.warning(
+                f"[Magento2StockSync] [DRY RUN] Would update Magento 2 SKU '{sku}' to quantity {quantity} "
                 f"(triggered by {event})"
             )
             return
@@ -292,23 +318,24 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
 
             if not product:
                 logger.warning(
-                    f"Product with SKU '{sku}' not found in Magento 2, skipping sync"
+                    f"[Magento2StockSync] Product with SKU '{sku}' not found in Magento 2, skipping sync"
                 )
                 return
 
             # Update the stock quantity
+            logger.info(f"[Magento2StockSync] Updating Magento 2 stock for SKU '{sku}' to {quantity}")
             client.update_product_stock(sku, quantity)
 
             logger.info(
-                f"Successfully synced SKU '{sku}' to Magento 2: quantity={quantity}"
+                f"[Magento2StockSync] ✓ Successfully synced SKU '{sku}' to Magento 2: quantity={quantity}"
             )
 
         except Magento2APIError as e:
-            logger.error(f"Failed to sync SKU '{sku}' to Magento 2: {str(e)}")
+            logger.error(f"[Magento2StockSync] Failed to sync SKU '{sku}' to Magento 2: {str(e)}")
         except ValueError as e:
-            logger.error(f"Configuration error: {str(e)}")
+            logger.error(f"[Magento2StockSync] Configuration error: {str(e)}")
         except Exception as e:
             logger.error(
-                f"Unexpected error syncing SKU '{sku}' to Magento 2: {str(e)}",
+                f"[Magento2StockSync] Unexpected error syncing SKU '{sku}' to Magento 2: {str(e)}",
                 exc_info=True,
             )
