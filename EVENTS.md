@@ -14,7 +14,9 @@ Based on InvenTree's `StockEvents` enumeration:
 | `stockitem.split` | Stock item split into multiple items | ✅ Yes |
 | `stockitem.assignedtocustomer` | Stock assigned to customer | ✅ Yes |
 | `stockitem.returnedfromcustomer` | Stock returned from customer | ✅ Yes |
+| `stockitem.returnedtostock` | Stock returned to stock | ✅ Yes |
 | `stockitem.installed` | Stock installed into assembly | ✅ Yes |
+| `stockitem.created_items` | Stock items created (bulk or single) | ✅ Yes |
 
 ## How Events Work
 

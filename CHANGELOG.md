@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **BREAKING**: Switched from Django model signals to InvenTree stock events
-  - Now listens to: `stockitem.quantityupdated`, `stockitem.moved`, `stockitem.counted`, etc.
+  - Now listens to: `stockitem.quantityupdated`, `stockitem.moved`, `stockitem.counted`, `stockitem.returnedtostock`, `stockitem.created_items`, etc.
   - Previously listened to: `stock_stockitem.created`, `stock_stockitem.saved`, `stock_stockitem.deleted`
 - Removed `SYNC_ON_CREATE`, `SYNC_ON_UPDATE`, `SYNC_ON_DELETE` settings (all stock events now trigger sync)
 - Updated README.md to reflect actual events being monitored

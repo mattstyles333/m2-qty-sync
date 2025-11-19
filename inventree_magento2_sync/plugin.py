@@ -168,13 +168,16 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
         # Map InvenTree stock events to our sync settings
         # We process any event that changes stock quantities
         stock_change_events = [
-            "stockitem.quantityupdated",  # Quantity changed
+            "stockitem.quantityupdated",   # Quantity changed
             "stockitem.moved",             # Item moved (might affect location-based stock)
             "stockitem.counted",           # Stock counted/adjusted
             "stockitem.split",             # Item split (creates new items)
             "stockitem.assignedtocustomer", # Assigned to customer (reduces available stock)
             "stockitem.returnedfromcustomer", # Returned from customer (increases stock)
+            "stockitem.returnedtostock",   # Returned to stock (increases stock)
             "stockitem.installed",         # Installed into assembly
+            "stockitem.created_items",     # Items created (bulk or single)
+            
             # DIAGNOSTIC: Also listen to Django signals
             "stock_stockitem.saved",       # Django post_save signal
             "stock_stockitem.created",     # Django created signal  
