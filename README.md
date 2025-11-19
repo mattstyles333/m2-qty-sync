@@ -150,12 +150,66 @@ Create a simple stock change and verify:
 
 ## Troubleshooting
 
-### Plugin Not Syncing
+### No Logs Appearing / Plugin Not Working At All
 
-1. Check that **Enable Sync** is enabled
-2. Check that the appropriate event sync settings are enabled (Create/Update/Delete)
-3. Verify Magento 2 credentials are correct
-4. Check InvenTree logs for error messages
+If you see **absolutely no log messages** from the plugin (not even initialization messages):
+
+**1. Verify Plugin is Installed:**
+```bash
+# Inside your InvenTree environment/container
+pip list | grep m2-qty-sync
+```
+
+If not listed, reinstall:
+```bash
+pip install -e /path/to/m2-qty-sync
+# OR for production
+pip install m2-qty-sync
+```
+
+**2. Restart InvenTree:**
+```bash
+# Docker
+docker-compose restart inventree
+
+# Systemd
+sudo systemctl restart inventree
+```
+
+**3. Check if Plugin is Loaded:**
+After restarting, watch for this message in logs:
+```
+!!! MAGENTO2 STOCK SYNC PLUGIN v1.1.0 INITIALIZED !!!
+```
+
+If you DON'T see this message, the plugin isn't being loaded by InvenTree.
+
+**4. Verify Plugin is Active in InvenTree:**
+- Go to Settings → Admin → Plugins
+- Find "Magento 2 Stock Synchronization"
+- Ensure it's **Active** (not just installed)
+
+**5. Check InvenTree Plugin Directory:**
+```bash
+# View InvenTree's plugin configuration
+cat /path/to/inventree/config.yaml | grep -A 10 plugins
+
+# Or check environment variable
+echo $INVENTREE_PLUGIN_DIR
+```
+
+**6. Look for Plugin Errors:**
+```bash
+# Check for plugin loading errors
+docker-compose logs inventree | grep -i "plugin\|error\|magento"
+```
+
+### Plugin Not Syncing (But Shows in Logs)
+
+1. Check that **Enable Sync** is enabled in plugin settings
+2. Verify Magento 2 credentials are correct
+3. Check InvenTree logs for error messages
+4. Ensure Part names match Magento SKUs exactly
 
 ### Product Not Found in Magento 2
 

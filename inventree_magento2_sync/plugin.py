@@ -79,6 +79,12 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
             "default": 30,
             "validator": int,
         },
+        "DIAGNOSTIC_MODE": {
+            "name": "Diagnostic Mode",
+            "description": "Log ALL events (including non-stock events) to diagnose event issues",
+            "default": False,
+            "validator": bool,
+        },
 
     }
 
@@ -86,9 +92,16 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
         """Initialize the plugin."""
         super().__init__()
         self._client = None
-        logger.info("=" * 60)
-        logger.info(f"Magento2StockSyncPlugin v{PLUGIN_VERSION} initialized")
-        logger.info("=" * 60)
+        
+        # EXTREMELY LOUD LOGGING - should be impossible to miss
+        print("=" * 80)
+        print(f"!!! MAGENTO2 STOCK SYNC PLUGIN v{PLUGIN_VERSION} INITIALIZED !!!")
+        print("=" * 80)
+        logger.critical(f"!!! MAGENTO2 STOCK SYNC PLUGIN v{PLUGIN_VERSION} INITIALIZED !!!")
+        logger.error(f"!!! MAGENTO2 STOCK SYNC PLUGIN v{PLUGIN_VERSION} INITIALIZED !!!")
+        logger.warning(f"!!! MAGENTO2 STOCK SYNC PLUGIN v{PLUGIN_VERSION} INITIALIZED !!!")
+        logger.info(f"!!! MAGENTO2 STOCK SYNC PLUGIN v{PLUGIN_VERSION} INITIALIZED !!!")
+        print("=" * 80)
 
     def get_magento_client(self) -> Magento2Client:
         """Get or create a Magento 2 API client.
@@ -126,12 +139,27 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
         Returns:
             True if the event should be processed
         """
-        # Log ALL events to help diagnose
+        # EXTREMELY LOUD LOGGING - should be impossible to miss
+        print("!" * 80)
+        print(f"!!! EVENT RECEIVED: '{event}' !!!")
+        print("!" * 80)
+        logger.critical(f"!!! EVENT RECEIVED: '{event}' !!!")
+        logger.error(f"[Magento2StockSync] Received event: '{event}'")
         logger.info(f"[Magento2StockSync] Received event: '{event}'")
         
         # Check if sync is enabled
         sync_enabled = self.get_setting("ENABLE_SYNC", False)
+        diagnostic_mode = self.get_setting("DIAGNOSTIC_MODE", False)
+        print(f"!!! ENABLE_SYNC setting: {sync_enabled} !!!")
+        print(f"!!! DIAGNOSTIC_MODE setting: {diagnostic_mode} !!!")
+        logger.error(f"[Magento2StockSync] ENABLE_SYNC={sync_enabled}, DIAGNOSTIC_MODE={diagnostic_mode}")
         logger.info(f"[Magento2StockSync] ENABLE_SYNC setting: {sync_enabled}")
+        
+        # DIAGNOSTIC MODE: Log all events even if sync is disabled
+        if diagnostic_mode:
+            print(f"!!! DIAGNOSTIC MODE ACTIVE: Will log event data even if sync disabled !!!")
+            logger.warning(f"[Magento2StockSync] DIAGNOSTIC MODE: Processing event '{event}' to see event data")
+            return True  # Process ALL events in diagnostic mode
         
         if not sync_enabled:
             logger.warning(f"[Magento2StockSync] Ignoring event '{event}' - sync is DISABLED in settings")
@@ -147,9 +175,20 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
             "stockitem.assignedtocustomer", # Assigned to customer (reduces available stock)
             "stockitem.returnedfromcustomer", # Returned from customer (increases stock)
             "stockitem.installed",         # Installed into assembly
+            # DIAGNOSTIC: Also listen to Django signals
+            "stock_stockitem.saved",       # Django post_save signal
+            "stock_stockitem.created",     # Django created signal  
+            "stockitem.saved",             # Possible alternate format
+            "stockitem.created",           # Possible alternate format
         ]
         
         should_process = event in stock_change_events
+        
+        # Fallback: Accept ALL events that mention "stock" to ensure we don't miss anything
+        # This is useful because InvenTree event names vary between versions
+        if event and "stock" in event.lower():
+            print(f"!!! STOCK-RELATED EVENT DETECTED: '{event}' !!!")
+            should_process = True
         
         logger.info(
             f"[Magento2StockSync] Event '{event}' - "
@@ -166,12 +205,29 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
             *args: Positional arguments from event
             **kwargs: Keyword arguments from event (includes 'model', 'id', 'instance')
         """
-        logger.info("=" * 60)
-        logger.info(f"[Magento2StockSync] PROCESS_EVENT CALLED")
+        print("#" * 80)
+        print(f"!!! PROCESS_EVENT CALLED FOR: '{event}' !!!")
+        print(f"!!! Args: {args}")
+        print(f"!!! Kwargs keys: {list(kwargs.keys())}")
+        
+        # Show all kwargs values for debugging
+        for k, v in kwargs.items():
+            print(f"!!!   {k} = {v}")
+            logger.info(f"[Magento2StockSync] Event kwarg: {k} = {v}")
+        
+        print("#" * 80)
+        logger.critical(f"[Magento2StockSync] PROCESS_EVENT CALLED FOR: '{event}'")
+        logger.error(f"[Magento2StockSync] PROCESS_EVENT CALLED")
         logger.info(f"[Magento2StockSync] Event: '{event}'")
         logger.info(f"[Magento2StockSync] Args: {args}")
         logger.info(f"[Magento2StockSync] Kwargs keys: {list(kwargs.keys())}")
-        logger.info("=" * 60)
+        
+        # Check if diagnostic mode (don't actually sync in diagnostic mode)
+        diagnostic_mode = self.get_setting("DIAGNOSTIC_MODE", False)
+        if diagnostic_mode:
+            print("!!! DIAGNOSTIC MODE: Showing event data only, not syncing to Magento !!!")
+            logger.warning(f"[Magento2StockSync] DIAGNOSTIC MODE: Event '{event}' logged, not syncing")
+            return
         
         try:
             # Extract event data
@@ -235,9 +291,12 @@ class Magento2StockSyncPlugin(APICallMixin, EventMixin, SettingsMixin, InvenTree
 
         # Fallback: try to import and query the StockItem
         # (works for create/update, but not for delete)
-        if event != "stock_stockitem.deleted":
+        if "deleted" not in event:
             try:
                 from stock.models import StockItem
+
+                if stock_item_id is None:
+                    return None
 
                 stock_item = StockItem.objects.get(pk=stock_item_id)
                 return stock_item.part
