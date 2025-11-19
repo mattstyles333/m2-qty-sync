@@ -42,22 +42,28 @@ If StockItem #2 is deleted, Magento 2 is instantly updated to show 50 units.
 
 ## Installation
 
-### Method 1: Install from PyPI (when published)
+### Method 1: Install via InvenTree Plugin Interface (Recommended)
+
+1. Log into InvenTree as administrator
+2. Navigate to **Settings → Admin → Plugins**
+3. Click **Install Plugin** button
+4. In the **Source URL** field, enter:
+   ```
+   git+https://github.com/mattstyles333/m2-qty-sync.git
+   ```
+   **⚠️ Important:** Enter ONLY the URL starting with `git+` - do NOT include `pip install`
+5. Click **Install** and wait for completion
+
+### Method 2: Install from Command Line
 
 ```bash
-pip install inventree-magento2-sync
-```
-
-### Method 2: Install from Git Repository
-
-```bash
-pip install git+https://github.com/inventree/inventree-magento2-sync.git
+pip install git+https://github.com/mattstyles333/m2-qty-sync.git
 ```
 
 ### Method 3: Install from Local Directory
 
 ```bash
-cd /path/to/inventree-magento2-sync
+cd /path/to/m2-qty-sync
 pip install -e .
 ```
 

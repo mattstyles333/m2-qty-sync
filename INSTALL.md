@@ -2,13 +2,27 @@
 
 ## Installation Methods
 
-### Method 1: Install from Git (Recommended for Testing)
+### Method 1: Install via InvenTree Plugin Interface (Easiest)
+
+1. Log into InvenTree as administrator
+2. Navigate to **Settings → Admin → Plugins**
+3. Click **Install Plugin** button
+4. In the **Source URL** field, enter:
+   ```
+   git+https://github.com/mattstyles333/m2-qty-sync.git
+   ```
+   **Note:** Do NOT include `pip install` - just the URL starting with `git+`
+5. Click **Install**
+6. Wait for installation to complete
+7. The plugin will appear in the plugin list
+
+### Method 2: Install from Command Line (Git)
 
 ```bash
-pip install git+https://github.com/inventree/inventree-magento2-sync.git
+pip install git+https://github.com/mattstyles333/m2-qty-sync.git
 ```
 
-### Method 2: Install from Local Directory
+### Method 3: Install from Local Directory
 
 ```bash
 # Clone or download the repository
