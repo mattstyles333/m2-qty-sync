@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-11-19
+
+### Added
+- Additional stock events: `stockitem.returnedtostock` and `stockitem.created_items`
+- Fallback event detection for any event containing "stock" to ensure compatibility across InvenTree versions
+- Comprehensive troubleshooting guide in README.md
+
+### Fixed
+- Event filtering logic now properly handles "deleted" events without attempting database lookups
+- Stock item ID type safety check to prevent errors when ID is None
+
+### Changed
+- Removed redundant documentation files for cleaner project structure
+
 ## [1.1.0] - 2025-01-XX
 
 ### Added
