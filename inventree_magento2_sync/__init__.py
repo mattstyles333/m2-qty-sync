@@ -1,3 +1,5 @@
 """InvenTree Magento 2 Stock Sync Plugin."""
 
-__version__ = "1.0.0"
+from .version import PLUGIN_VERSION
+
+__version__ = PLUGIN_VERSION
