@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="m2-qty-sync",
-    version="1.1.1",
+    version="1.1.2",
     author="InvenTree Community",
     author_email="",
     description="InvenTree plugin to sync stock quantities to Magento 2",

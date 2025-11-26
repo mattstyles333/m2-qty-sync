@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "m2-qty-sync"
-version = "1.1.1"
+version = "1.1.2"
 description = "InvenTree plugin to sync stock quantities to Magento 2"
 readme = "README.md"
 requires-python = ">=3.9"

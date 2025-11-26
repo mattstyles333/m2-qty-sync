@@ -2,8 +2,13 @@
 
 import logging
 
-from plugin import InvenTreePlugin
-from plugin.mixins import APICallMixin, EventMixin, SettingsMixin
+# Support both old and new InvenTree import paths
+try:
+    from InvenTree.plugin import InvenTreePlugin
+    from InvenTree.plugin.mixins import APICallMixin, EventMixin, SettingsMixin
+except ImportError:
+    from plugin import InvenTreePlugin
+    from plugin.mixins import APICallMixin, EventMixin, SettingsMixin
 
 from .magento_api import Magento2APIError, Magento2Client
 from .version import PLUGIN_NAME, PLUGIN_SLUG, PLUGIN_TITLE, PLUGIN_VERSION
