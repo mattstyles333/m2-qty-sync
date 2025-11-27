@@ -2,24 +2,8 @@
 
 import logging
 
-# InvenTree plugin imports - these are only available within InvenTree
-try:
-    from plugin import InvenTreePlugin
-    from plugin.mixins import EventMixin, SettingsMixin
-except ImportError:
-    # Fallback for testing outside InvenTree environment
-    class InvenTreePlugin:
-        """Stub for testing."""
-        pass
-
-    class EventMixin:
-        """Stub for testing."""
-        pass
-
-    class SettingsMixin:
-        """Stub for testing."""
-        def get_setting(self, key, backup_value=None):
-            return backup_value
+from plugin import InvenTreePlugin
+from plugin.mixins import EventMixin, SettingsMixin
 
 from .magento_api import Magento2APIError, Magento2Client
 from .version import PLUGIN_NAME, PLUGIN_SLUG, PLUGIN_TITLE, PLUGIN_VERSION
