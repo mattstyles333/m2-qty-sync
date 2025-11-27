@@ -1,6 +1,6 @@
 """Version information for the plugin."""
 
-PLUGIN_VERSION = "2.0.0"
-PLUGIN_NAME = "Magento2StockSync"
-PLUGIN_SLUG = "magento2stocksync"
-PLUGIN_TITLE = "Magento 2 Stock Synchronization"
+PLUGIN_VERSION = "2.0.1"
+PLUGIN_NAME = "M2StockSync"
+PLUGIN_SLUG = "m2stocksync"
+PLUGIN_TITLE = "Magento 2 Stock Sync"
