@@ -2,6 +2,8 @@
 
 import logging
 
+from django.utils.translation import gettext_lazy as _
+
 from plugin import InvenTreePlugin
 from plugin.mixins import EventMixin, SettingsMixin
 
@@ -34,39 +36,37 @@ class Magento2StockSyncPlugin(EventMixin, SettingsMixin, InvenTreePlugin):
 
     SETTINGS = {
         "MAGENTO_URL": {
-            "name": "Magento 2 URL",
-            "description": "Base URL of your Magento 2 store (e.g., https://example.com)",
+            "name": _("Magento 2 URL"),
+            "description": _("Base URL of your Magento 2 store (e.g., https://example.com)"),
             "default": "",
-            "required": True,
         },
         "ACCESS_TOKEN": {
-            "name": "Access Token",
-            "description": "Magento 2 Integration Access Token",
+            "name": _("Access Token"),
+            "description": _("Magento 2 Integration Access Token"),
             "default": "",
-            "required": True,
             "protected": True,
         },
         "ENABLE_SYNC": {
-            "name": "Enable Sync",
-            "description": "Enable automatic stock synchronization to Magento 2",
+            "name": _("Enable Sync"),
+            "description": _("Enable automatic stock synchronization to Magento 2"),
             "default": False,
             "validator": bool,
         },
         "DRY_RUN": {
-            "name": "Dry Run Mode",
-            "description": "Log sync actions without actually updating Magento 2",
+            "name": _("Dry Run Mode"),
+            "description": _("Log sync actions without actually updating Magento 2"),
             "default": False,
             "validator": bool,
         },
         "VERIFY_SSL": {
-            "name": "Verify SSL",
-            "description": "Verify SSL certificates when connecting to Magento 2",
+            "name": _("Verify SSL"),
+            "description": _("Verify SSL certificates when connecting to Magento 2"),
             "default": True,
             "validator": bool,
         },
         "TIMEOUT": {
-            "name": "Request Timeout",
-            "description": "API request timeout in seconds",
+            "name": _("Request Timeout"),
+            "description": _("API request timeout in seconds"),
             "default": 30,
             "validator": int,
         },
